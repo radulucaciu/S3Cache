@@ -1,11 +1,11 @@
 from setuptools import setup
 
 setup(
-   name='redshiftcache',
+   name='s3cache',
    version='0.1',
    description='A module that Caches Database queries to S3',
    author='Radu Lucaciu',
    author_email='',
-   packages=['redshiftcache'],  #same as name
-   install_requires=['wheel', 'bar', 'greek'], #external packages as dependencies
+   packages=['s3cache'],  #same as name
+   install_requires=['pandas', 'sqlalchemy'], #external packages as dependencies
 )
