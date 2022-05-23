@@ -10,7 +10,12 @@ from io import StringIO
 class S3Cache:
     _GRANULARITIES = set(['daily', 'weekly', 'monthly'])
 
-    def __init__(self, host, db, port, username, password, bucket, folder):
+    def __init__(self, bucket, folder, conn=None, host=None, db=None, port=5439, username=None, password=None):
+        if conn is not None:
+            self._conn = conn
+        else:
+            if (host and db and port and username and password) is None:
+                raise Exception("If conn is None, host, db, port, username and password need to be provided and not be None")
         self._conn = create_db_connection(host, db, username, password, port, dialect='redshift', driver='redshift_connector')
         self._bucket = bucket
         self._folder = folder
