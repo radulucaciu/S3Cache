@@ -7,7 +7,7 @@ from botocore.errorfactory import ClientError
 from io import StringIO
 
 
-class RedshiftCache:
+class S3Cache:
     _GRANULARITIES = set(['daily', 'weekly', 'monthly'])
 
     def __init__(self, host, db, port, username, password, bucket, folder):
