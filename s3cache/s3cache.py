@@ -18,7 +18,7 @@ class S3Cache:
                 raise Exception("If conn is None, host, db, port, username and password need to be provided and not be None")
 
         self._verbose = verbose
-        self._conn = create_db_connection(host, db, username, password, port, dialect='redshift', driver='redshift_connector')
+        self._conn = self._create_db_connection(host, db, username, password, port, dialect='redshift', driver='redshift_connector')
         self._bucket = bucket
         self._folder = folder
 
@@ -38,6 +38,22 @@ class S3Cache:
             self._write_data_to_bucket(df, file_key)
         
         return df
+
+    def _create_db_connection(self, host: str, db: str, username: str,
+                         password: str, port: int, dialect: str, driver: str=None) -> sa.engine.Engine:
+        if driver is None:
+            full_dialect = dialect
+        else:
+            full_dialect = '{d}+{driver}'.format(d=dialect, driver=driver)
+        url = "{d}://{u}:{p}@{h}:{port}/{db}".format(
+            d=full_dialect,
+            u=username,
+            p=password,
+            h=host,
+            port=port,
+            db=db)
+        engine = sa.create_engine(url, connect_args={'sslmode': 'verify-ca'})
+        return engine.connect()
 
     def _log(self, msg):
         if self._verbose:
