@@ -10,33 +10,38 @@ from io import StringIO
 class S3Cache:
     _GRANULARITIES = set(['daily', 'weekly', 'monthly'])
 
-    def __init__(self, bucket, folder, conn=None, host=None, db=None, port=5439, username=None, password=None):
+    def __init__(self, bucket, folder, conn=None, host=None, db=None, port=5439, username=None, password=None, verbose=False):
         if conn is not None:
             self._conn = conn
         else:
             if (host and db and port and username and password) is None:
                 raise Exception("If conn is None, host, db, port, username and password need to be provided and not be None")
+
+        self._verbose = verbose
         self._conn = create_db_connection(host, db, username, password, port, dialect='redshift', driver='redshift_connector')
         self._bucket = bucket
         self._folder = folder
 
 
-    def query(self, sql: str, refresh: str = 'daily'):
+    def query(self, sql: str, refresh: str = 'weekly'):
         if refresh not in self._GRANULARITIES:
             raise Exception("refresh needs to be one of [{}]".format(','.join(self._GRANULARITIES)))
 
         file_key = self._get_file_key(sql, refresh)
         try:
             df = self._get_data_from_bucket(file_key)
-            print("Got cached data...")
+            self._log("Got cached data...")
         except ClientError:
-            print("Could not find cached data, pulling from Redshift...")
+            self._log("Could not find cached data, pulling from Redshift...")
             df = pd.read_sql(sql, self._conn)
-            print("Got data from Redshfit, writing cache...")
+            self._log("Got data from Redshfit, writing cache...")
             self._write_data_to_bucket(df, file_key)
         
         return df
 
+    def _log(self, msg):
+        if self._verbose:
+            print(msg)
 
     def _get_timestamp_for_granularity(self, granularity: str) -> str:
         if granularity == 'daily':
