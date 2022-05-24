@@ -65,7 +65,7 @@ class S3Cache:
             dt = datetime.date.today()
         elif granularity == 'weekly':
             dt = datetime.date.today()
-            dt = dt - timedelta(days=dt.weekday())
+            dt = dt - datetime.timedelta(days=dt.weekday())
         elif granularity == 'monthly':
             dt = datetime.date.today().replace(day=1)
             
