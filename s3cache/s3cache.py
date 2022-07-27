@@ -97,7 +97,7 @@ class S3Cache:
         s3 = boto3.resource('s3')
         
         csv_buffer = StringIO()
-        df.to_csv(csv_buffer)
+        df.to_csv(csv_buffer, index=False)
 
         obj_write = s3.Object(self._bucket, pathInBucket)
         obj_write.put(Body=csv_buffer.getvalue())
