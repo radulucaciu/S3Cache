@@ -5,7 +5,7 @@ import pandas as pd
 import sqlalchemy as sa
 
 from botocore.errorfactory import ClientError
-from io import StringIO
+from io import BytesIO
 
 
 class S3Cache:
@@ -99,9 +99,10 @@ class S3Cache:
         if self._file_format == self._FORMAT_CSV:
             df.to_csv(buffer, index=False)
         elif self._file_format == self._FORMAT_PARQUET:
-            df.to_parquet(buffer)
-
-        raise Exception("Unknown format...")
+            # Must use pyarrow because fastparquet does not support BytesIO
+            df.to_parquet(buffer, engine='pyarrow')
+        else:
+            raise Exception("Unknown format...")
 
 
     def _get_data_from_bucket(self, pathInBucket: str):
@@ -121,7 +122,7 @@ class S3Cache:
         s3_client = boto3.client('s3')
         s3 = boto3.resource('s3')
         
-        csv_buffer = StringIO()
+        csv_buffer = BytesIO()
         self._write_buffer(df, csv_buffer)
 
         obj_write = s3.Object(self._bucket, pathInBucket)

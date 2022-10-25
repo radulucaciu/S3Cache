@@ -7,5 +7,5 @@ setup(
    author='Radu Lucaciu',
    author_email='',
    packages=['s3cache'],  #same as name
-   install_requires=['fastparquet', 'pandas', 'sqlalchemy'], #external packages as dependencies
+   install_requires=['pyarrow', 'pandas', 'sqlalchemy'], #external packages as dependencies
 )
