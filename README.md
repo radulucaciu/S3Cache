@@ -1,6 +1,6 @@
-This module offers S3 caching capabilities for Redshift
+This module offers S3 caching capabilities for SQL Databases
 
 Usage:
 ```
-rc = RedshiftCache('redshift_host', 'redshift_database', redshift_port, 'redshift_username', 'redshift_password', 's3_bucket', 's3_prefix')
+s3c = S3Cache('host', 'database', port, 'username', 'password', 's3_bucket', 's3_prefix', file_format='parquet')
 ```
