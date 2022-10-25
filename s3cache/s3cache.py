@@ -95,7 +95,7 @@ class S3Cache:
 
         raise Exception("Unknown format...")
 
-    def _write_buffer(self, buffer):
+    def _write_buffer(self, df, buffer):
         if self._file_format == self._FORMAT_CSV:
             df.to_csv(buffer, index=False)
         elif self._file_format == self._FORMAT_PARQUET:
@@ -122,7 +122,7 @@ class S3Cache:
         s3 = boto3.resource('s3')
         
         csv_buffer = StringIO()
-        self._write_buffer(csv_buffer)
+        self._write_buffer(df, csv_buffer)
 
         obj_write = s3.Object(self._bucket, pathInBucket)
         obj_write.put(Body=csv_buffer.getvalue())
