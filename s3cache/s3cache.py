@@ -90,7 +90,7 @@ class S3Cache:
     def _read_data(self, file):
         if self._file_format == _FORMAT_CSV:
             pd.read_csv(file)
-        else if self._file_format == self._FORMAT_PARQUET:
+        elif self._file_format == self._FORMAT_PARQUET:
             df.read_parquet(file)
 
         raise Exception("Unknown format...")
@@ -98,7 +98,7 @@ class S3Cache:
     def _write_buffer(self, buffer):
         if self._file_format == _FORMAT_CSV:
             df.to_csv(buffer, index=False)
-        else if self._file_format == self._FORMAT_PARQUET:
+        elif self._file_format == self._FORMAT_PARQUET:
             df.to_parquet(buffer)
 
         raise Exception("Unknown format...")
