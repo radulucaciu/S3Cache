@@ -10,18 +10,26 @@ from io import StringIO
 
 class S3Cache:
     _GRANULARITIES = set(['daily', 'weekly', 'monthly'])
+    _FORMAT_PARQUET = 'parquet'
+    _FORMAT_CSV = 'csv'
+    _FORMATS = [_FORMAT_PARQUET, _FORMAT_CSV]
 
-    def __init__(self, bucket, folder, conn=None, host=None, db=None, port=5439, username=None, password=None, verbose=False):
+    def __init__(self, bucket, folder, conn=None, host=None, db=None, port=5439, username=None, password=None, file_format='parquet', verbose=False):
         if conn is not None:
             self._conn = conn
         else:
             if (host and db and port and username and password) is None:
                 raise Exception("If conn is None, host, db, port, username and password need to be provided and not be None")
 
+
+        if file_format not in self._FORMATS:
+            raise Exception("Only the following formats are supported: {}".format(', '.join(self._FORMATS)))
+
         self._verbose = verbose
         self._conn = self._create_db_connection(host, db, username, password, port, dialect='redshift', driver='redshift_connector')
         self._bucket = bucket
         self._folder = folder
+        self._file_format = file_format
 
 
     def query(self, sql: str, refresh: str = 'weekly'):
@@ -75,8 +83,25 @@ class S3Cache:
     def _get_file_key(self, sql: str, granularity: str):
         filename = '{}_{}.{}'.format(
             hashlib.md5(sql.encode()).hexdigest(), 
-            self._get_timestamp_for_granularity(granularity), 'csv')
+            self._get_timestamp_for_granularity(granularity), self._file_format)
         return '{}/{}'.format(self._folder, filename)
+
+
+    def _read_data(self, file):
+        if self._file_format == _FORMAT_CSV:
+            pd.read_csv(file)
+        else if self._file_format == self._FORMAT_PARQUET:
+            df.read_parquet(file)
+
+        raise Exception("Unknown format...")
+
+    def _write_buffer(self, buffer):
+        if self._file_format == _FORMAT_CSV:
+            df.to_csv(buffer, index=False)
+        else if self._file_format == self._FORMAT_PARQUET:
+            df.to_parquet(buffer)
+
+        raise Exception("Unknown format...")
 
 
     def _get_data_from_bucket(self, pathInBucket: str):
@@ -89,7 +114,7 @@ class S3Cache:
 
         # Read the content into a pandas dataframe and returns
         response = s3_client.get_object(Bucket=self._bucket, Key=pathInBucket)
-        return pd.read_csv(response.get("Body"))
+        return self._read_data(response.get("Body"))
 
 
     def _write_data_to_bucket(self, df: pd.DataFrame, pathInBucket: str):
@@ -97,7 +122,7 @@ class S3Cache:
         s3 = boto3.resource('s3')
         
         csv_buffer = StringIO()
-        df.to_csv(csv_buffer, index=False)
+        self._write_buffer(csv_buffer)
 
         obj_write = s3.Object(self._bucket, pathInBucket)
         obj_write.put(Body=csv_buffer.getvalue())
