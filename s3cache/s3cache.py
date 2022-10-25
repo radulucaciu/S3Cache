@@ -5,6 +5,7 @@ import pandas as pd
 import sqlalchemy as sa
 
 from botocore.errorfactory import ClientError
+from botocore.response import StreamingBody
 from io import BytesIO
 
 
@@ -87,11 +88,11 @@ class S3Cache:
         return '{}/{}'.format(self._folder, filename)
 
 
-    def _read_data(self, file):
+    def _read_data(self, s3buffer: StreamingBody):
         if self._file_format == self._FORMAT_CSV:
             return pd.read_csv(file)
         elif self._file_format == self._FORMAT_PARQUET:
-            return pd.read_parquet(file)
+            return pd.read_parquet(BytesIO(s3buffer.read()))
 
         raise Exception("Unknown format...")
 
