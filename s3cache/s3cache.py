@@ -90,7 +90,7 @@ class S3Cache:
 
     def _read_data(self, s3buffer: StreamingBody):
         if self._file_format == self._FORMAT_CSV:
-            return pd.read_csv(file)
+            return pd.read_csv(s3buffer)
         elif self._file_format == self._FORMAT_PARQUET:
             return pd.read_parquet(BytesIO(s3buffer.read()))
 
