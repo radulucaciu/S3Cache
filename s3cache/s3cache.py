@@ -82,8 +82,13 @@ class S3Cache:
 
 
     def _get_file_key(self, sql: str, granularity: str):
+        key_items = [
+            sql,
+            str(conn.engine.url)
+        ]
+
         filename = '{}_{}.{}'.format(
-            hashlib.md5(sql.encode()).hexdigest(), 
+            hashlib.md5(json.dumps(key_items).encode()).hexdigest(), 
             self._get_timestamp_for_granularity(granularity), self._file_format)
         return '{}/{}'.format(self._folder, filename)
 
