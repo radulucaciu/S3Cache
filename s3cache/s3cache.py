@@ -85,7 +85,7 @@ class S3Cache:
     def _get_file_key(self, sql: str, granularity: str):
         key_items = [
             sql,
-            str(conn.engine.url)
+            str(self._conn.engine.url)
         ]
 
         filename = '{}_{}.{}'.format(
